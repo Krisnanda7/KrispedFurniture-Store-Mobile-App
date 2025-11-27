@@ -1,112 +1,128 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { ScrollView, Text, View, Image, TouchableOpacity } from "react-native";
+import { supabase } from "../../lib/supabase";
+import { useState, useEffect } from "react";
+import SearchBar from "../../components/SearchBar";
+import colors from "../../constants/theme";
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+export default function Explore() {
+  const [search, setSearch] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [popular, setPopular] = useState([]);
+  const [collections, setCollections] = useState([]);
 
-export default function TabTwoScreen() {
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const { data: cat } = await supabase.from("categories").select("*");
+    const { data: pop } = await supabase
+      .from("products")
+      .select("*")
+      .order("views", { ascending: false })
+      .limit(10);
+
+    const { data: coll } = await supabase.from("collections").select("*");
+
+    setCategories(cat || []);
+    setPopular(pop || []);
+    setCollections(coll || []);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <ScrollView style={{ backgroundColor: colors.background, padding: 16 }}>
+      <SearchBar value={search} setValue={setSearch} />
+
+      {/* Title */}
+      <Text
+        style={{
+          marginTop: 20,
+          fontSize: 22,
+          fontWeight: "bold",
+          color: colors.text,
+        }}
+      >
+        Jelajahi Inspirasi
+      </Text>
+
+      {/* Category Pills */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginVertical: 16 }}
+      >
+        {categories.map((c) => (
+          <TouchableOpacity
+            key={c.id}
+            style={{
+              backgroundColor: "#fff",
+              paddingVertical: 10,
+              paddingHorizontal: 18,
+              borderRadius: 20,
+              marginRight: 10,
+              borderWidth: 1,
+              borderColor: "#d4c1a5",
+            }}
+          >
+            <Text style={{ color: colors.primary, fontWeight: "600" }}>
+              {c.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Popular Items */}
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
+        🔥 Populer Minggu Ini
+      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {popular.map((item) => (
+          <View key={item.id} style={{ width: 150, marginRight: 14 }}>
+            <Image
+              source={{ uri: item.image }}
+              style={{
+                width: "100%",
+                height: 140,
+                borderRadius: 12,
+                backgroundColor: "#ddd",
+              }}
+            />
+            <Text
+              style={{ marginTop: 6, fontWeight: "600", color: colors.text }}
+            >
+              {item.name}
+            </Text>
+            <Text style={{ color: colors.secondary }}>
+              Rp {item.price.toLocaleString()}
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Collections */}
+      <Text style={{ marginTop: 20, fontSize: 18, fontWeight: "bold" }}>
+        📸 Koleksi Desain
+      </Text>
+
+      <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 10 }}>
+        {collections.map((col) => (
+          <TouchableOpacity
+            key={col.id}
+            style={{ width: "48%", marginBottom: 14, marginRight: "4%" }}
+          >
+            <Image
+              source={{ uri: col.image }}
+              style={{
+                width: "100%",
+                height: 150,
+                borderRadius: 10,
+                backgroundColor: "#ddd",
+              }}
+            />
+            <Text style={{ fontWeight: "600", marginTop: 6 }}>{col.title}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-});
