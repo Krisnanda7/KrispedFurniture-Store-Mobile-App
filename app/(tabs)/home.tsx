@@ -1,48 +1,109 @@
 // app/(tabs)/home.tsx
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Dimensions,
-  Image,
   ScrollView,
-  StyleSheet,
   Text,
-  TouchableOpacity,
   View,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  RefreshControl,
 } from "react-native";
-import SearchBar from "../../components/SearchBar";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import colors from "../../constants/theme";
 import { supabase } from "../../lib/supabase";
 
 const { width } = Dimensions.get("window");
-const PRODUCT_WIDTH = (width - 48) / 2; // 2 kolom dengan padding
+const PRODUCT_WIDTH = (width - 48) / 2;
+
+const PROMO_BANNERS = [
+  {
+    id: 1,
+    title: "Flash Sale 50%",
+    subtitle: "Hemat hingga 2 juta",
+    color: "#FF6B6B",
+    icon: "flash",
+  },
+  {
+    id: 2,
+    title: "Gratis Ongkir",
+    subtitle: "Min. belanja 100rb",
+    color: "#4ECDC4",
+    icon: "car",
+  },
+  {
+    id: 3,
+    title: "Cashback 20%",
+    subtitle: "Maks. 50rb",
+    color: "#FFB347",
+    icon: "wallet",
+  },
+];
+
+const QUICK_CATEGORIES = [
+  { id: 1, name: "Sofa", icon: "bed-outline", color: "#FF6B6B" },
+  { id: 2, name: "Meja", icon: "desktop-outline", color: "#4ECDC4" },
+  { id: 1, name: "Kursi", icon: "restaurant-outline", color: "#95E1D3" },
+  { id: 2, name: "Lemari", icon: "albums-outline", color: "#FFB347" },
+  { id: 2, name: "Rak", icon: "grid-outline", color: "#AA96DA" },
+  { id: 1, name: "Kasur", icon: "bed-outline", color: "#FCBAD3" },
+];
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [popularProducts, setPopularProducts] = useState([]);
+  const [newProducts, setNewProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const getProducts = async () => {
+  useEffect(() => {
+    loadHomeData();
+  }, []);
+
+  const loadHomeData = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.from("products").select("*");
-      if (error) {
-        console.error("Error fetching products:", error);
-        return;
-      }
-      setProducts(data || []);
-    } catch (err) {
-      console.error("Unexpected error:", err);
+
+      // Get featured products (dengan diskon)
+      const { data: featured } = await supabase
+        .from("products")
+        .select("*")
+        .not("discount", "is", null)
+        .order("discount", { ascending: false })
+        .limit(6);
+
+      // Get popular products (terlaris)
+      const { data: popular } = await supabase
+        .from("products")
+        .select("*")
+        .order("sold", { ascending: false })
+        .limit(6);
+
+      // Get new products (terbaru)
+      const { data: newest } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      setFeaturedProducts(featured || []);
+      setPopularProducts(popular || []);
+      setNewProducts(newest || []);
+    } catch (error) {
+      console.error("Error loading home data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    getProducts();
-  }, []);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadHomeData();
+    setRefreshing(false);
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -52,10 +113,52 @@ export default function Home() {
     }).format(price);
   };
 
-  const filteredProducts = products.filter((p) => {
-    if (!p || !p.title) return false;
-    return p.title.toLowerCase().includes(search.toLowerCase());
-  });
+  const renderProductCard = (item: any) => (
+    <TouchableOpacity
+      key={item.id}
+      style={styles.productCard}
+      onPress={() => router.push(`/product/${item.id}`)}
+    >
+      <Image
+        source={{ uri: item.image_url || "https://via.placeholder.com/200" }}
+        style={styles.productImage}
+        resizeMode="cover"
+      />
+
+      {item.discount && (
+        <View style={styles.discountBadge}>
+          <Text style={styles.discountText}>{item.discount}%</Text>
+        </View>
+      )}
+
+      <View style={styles.productInfo}>
+        <Text style={styles.productName} numberOfLines={2}>
+          {item.title}
+        </Text>
+
+        <View style={styles.priceContainer}>
+          <Text style={styles.productPrice}>{formatPrice(item.price)}</Text>
+          {item.original_price && (
+            <Text style={styles.originalPrice}>
+              {formatPrice(item.original_price)}
+            </Text>
+          )}
+        </View>
+
+        <View style={styles.ratingContainer}>
+          <Ionicons name="star" size={14} color="#FFA500" />
+          <Text style={styles.ratingText}>
+            {item.rating || "4.5"} | Terjual {item.sold || "100+"}
+          </Text>
+        </View>
+
+        <View style={styles.locationContainer}>
+          <Ionicons name="location-outline" size={12} color="#8E8E8E" />
+          <Text style={styles.locationText}>{item.location || "Jakarta"}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   if (loading) {
     return (
@@ -63,22 +166,33 @@ export default function Home() {
         <View style={styles.header}>
           <Text style={styles.logo}>Krisped Furniture</Text>
         </View>
-        <SearchBar value={search} setValue={setSearch} />
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading produk...</Text>
+          <Text style={styles.loadingText}>Memuat...</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.logo}>Krisped Furniture</Text>
+        <View>
+          <Text style={styles.greeting}>Selamat Datang 👋</Text>
+          <Text style={styles.logo}>Krisped Furniture</Text>
+        </View>
         <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.iconButton}>
             <Ionicons name="mail-outline" size={24} color={colors.text} />
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>2</Text>
+            </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
             <Ionicons
@@ -93,139 +207,139 @@ export default function Home() {
         </View>
       </View>
 
-      {/* Search Bar */}
-      <SearchBar value={search} setValue={setSearch} />
+      {/* Search Bar - Navigate to Explore */}
+      <TouchableOpacity
+        style={styles.searchButton}
+        onPress={() => router.push("/(tabs)/explore")}
+      >
+        <Ionicons name="search-outline" size={20} color="#8E8E8E" />
+        <Text style={styles.searchPlaceholder}>Cari furniture...</Text>
+      </TouchableOpacity>
 
-      {/* Banner Promo */}
+      {/* Promo Banners */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.bannerContainer}
       >
-        <View style={styles.banner}>
-          <Text style={styles.bannerTitle}>Diskon 50%</Text>
-          <Text style={styles.bannerSubtitle}>Untuk pembelian pertama</Text>
-        </View>
-        <View style={[styles.banner, { backgroundColor: "#4CAF50" }]}>
-          <Text style={styles.bannerTitle}>Gratis Ongkir</Text>
-          <Text style={styles.bannerSubtitle}>Min. belanja Rp 100.000</Text>
-        </View>
-        <View style={[styles.banner, { backgroundColor: "#FF9800" }]}>
-          <Text style={styles.bannerTitle}>Cashback 20%</Text>
-          <Text style={styles.bannerSubtitle}>Maksimal Rp 50.000</Text>
-        </View>
+        {PROMO_BANNERS.map((banner) => (
+          <TouchableOpacity key={banner.id} style={styles.banner}>
+            <View
+              style={[styles.bannerContent, { backgroundColor: banner.color }]}
+            >
+              <View style={styles.bannerIcon}>
+                <Ionicons name={banner.icon as any} size={32} color="#FFF" />
+              </View>
+              <View>
+                <Text style={styles.bannerTitle}>{banner.title}</Text>
+                <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
 
-      {/* Kategori */}
+      {/* Quick Categories */}
       <View style={styles.categoryContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {["Sofa", "Meja", "Kursi", "Lemari", "Rak", "Kasur"].map((cat) => (
-            <TouchableOpacity key={cat} style={styles.categoryItem}>
-              <View style={styles.categoryIcon}>
-                <Ionicons
-                  name="cube-outline"
-                  size={28}
-                  color={colors.primary}
-                />
+          {QUICK_CATEGORIES.map((cat, index) => (
+            <TouchableOpacity
+              key={`${cat.id}-${index}`}
+              style={styles.categoryItem}
+              onPress={() => router.push("/(tabs)/explore")}
+            >
+              <View
+                style={[
+                  styles.categoryIcon,
+                  { backgroundColor: cat.color + "20" },
+                ]}
+              >
+                <Ionicons name={cat.icon as any} size={28} color={cat.color} />
               </View>
-              <Text style={styles.categoryText}>{cat}</Text>
+              <Text style={styles.categoryText}>{cat.name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
 
-      {/* Section Title */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Rekomendasi Untuk Anda</Text>
-        <TouchableOpacity>
-          <Text style={styles.seeAll}>Lihat Semua</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Featured Products (Flash Sale) */}
+      {featuredProducts.length > 0 && (
+        <>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <Ionicons name="flash" size={24} color="#FF6B6B" />
+              <Text style={styles.sectionTitle}>Flash Sale Hari Ini</Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/explore")}>
+              <Text style={styles.seeAll}>Lihat Semua</Text>
+            </TouchableOpacity>
+          </View>
 
-      {/* Product Grid */}
-      <View style={styles.productGrid}>
-        {filteredProducts.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={styles.productCard}
-            onPress={() => router.push(`/product/${item.id}`)}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalScroll}
           >
-            {/* Image Container with Overlay */}
-            <View style={styles.imageContainer}>
-              <Image
-                source={{
-                  uri: item.image_url || "https://via.placeholder.com/200",
-                }}
-                style={styles.productImage}
-                resizeMode="cover"
-              />
-
-              {/* Discount Badge */}
-              {item.discount && (
-                <View style={styles.discountBadge}>
-                  <Text style={styles.discountText}>{item.discount}% OFF</Text>
-                </View>
-              )}
-
-              {/* Wishlist Button */}
-              <TouchableOpacity style={styles.wishlistButton}>
-                <Ionicons name="heart-outline" size={18} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.productInfo}>
-              <Text style={styles.productName} numberOfLines={2}>
-                {item.name}
-              </Text>
-
-              <View style={styles.priceContainer}>
-                <Text style={styles.productPrice}>
-                  {formatPrice(item.price)}
-                </Text>
-                {item.original_price && item.original_price > item.price && (
-                  <Text style={styles.originalPrice}>
-                    {formatPrice(item.original_price)}
-                  </Text>
-                )}
+            {featuredProducts.map((item) => (
+              <View key={item.id} style={styles.horizontalCard}>
+                {renderProductCard(item)}
               </View>
-
-              <View style={styles.ratingContainer}>
-                <View style={styles.ratingStars}>
-                  <Ionicons name="star" size={14} color="#FFB800" />
-                  <Text style={styles.ratingText}>{item.rating || "4.5"}</Text>
-                </View>
-                <Text style={styles.soldText}>
-                  • Terjual {item.sold || "100+"}
-                </Text>
-              </View>
-
-              <View style={styles.locationContainer}>
-                <Ionicons name="location-outline" size={12} color="#8E8E8E" />
-                <Text style={styles.locationText}>
-                  {item.location || "Jakarta"}
-                </Text>
-              </View>
-
-              {/* Free Shipping Badge - Optional */}
-              {item.free_shipping && (
-                <View style={styles.shippingBadge}>
-                  <Ionicons name="car-outline" size={10} color="#4CAF50" />
-                  <Text style={styles.shippingText}>Gratis Ongkir</Text>
-                </View>
-              )}
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Empty State */}
-      {filteredProducts.length === 0 && (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="search-outline" size={64} color="#CCCCCC" />
-          <Text style={styles.emptyText}>Produk tidak ditemukan</Text>
-          <Text style={styles.emptySubtext}>Coba kata kunci lain</Text>
-        </View>
+            ))}
+          </ScrollView>
+        </>
       )}
+
+      {/* Popular Products */}
+      {popularProducts.length > 0 && (
+        <>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <Ionicons name="flame" size={24} color="#FF6B6B" />
+              <Text style={styles.sectionTitle}>Terlaris Minggu Ini</Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/explore")}>
+              <Text style={styles.seeAll}>Lihat Semua</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.productGrid}>
+            {popularProducts.slice(0, 4).map(renderProductCard)}
+          </View>
+        </>
+      )}
+
+      {/* New Products */}
+      {newProducts.length > 0 && (
+        <>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <Ionicons name="sparkles" size={24} color="#4ECDC4" />
+              <Text style={styles.sectionTitle}>Produk Terbaru</Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/explore")}>
+              <Text style={styles.seeAll}>Lihat Semua</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.productGrid}>
+            {newProducts.slice(0, 4).map(renderProductCard)}
+          </View>
+        </>
+      )}
+
+      {/* CTA Banner */}
+      <TouchableOpacity
+        style={styles.ctaBanner}
+        onPress={() => router.push("/(tabs)/explore")}
+      >
+        <View>
+          <Text style={styles.ctaTitle}>Jelajahi Semua Produk</Text>
+          <Text style={styles.ctaSubtitle}>
+            Lebih dari 100+ furniture berkualitas
+          </Text>
+        </View>
+        <Ionicons name="arrow-forward" size={24} color="#FFF" />
+      </TouchableOpacity>
 
       <View style={{ height: 20 }} />
     </ScrollView>
@@ -245,6 +359,11 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: 12,
     backgroundColor: colors.background,
+  },
+  greeting: {
+    fontSize: 14,
+    color: "#8E8E8E",
+    marginBottom: 2,
   },
   logo: {
     fontSize: 24,
@@ -274,27 +393,53 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "bold",
   },
+  searchButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+    marginHorizontal: 16,
+    marginVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  searchPlaceholder: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#8E8E8E",
+  },
   bannerContainer: {
     paddingLeft: 16,
-    marginVertical: 16,
+    marginVertical: 12,
   },
   banner: {
-    width: 280,
-    height: 120,
-    backgroundColor: colors.primary,
+    marginRight: 12,
+  },
+  bannerContent: {
+    width: 200,
+    height: 100,
     borderRadius: 12,
     padding: 16,
-    marginRight: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  bannerIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(255,255,255,0.2)",
     justifyContent: "center",
+    alignItems: "center",
   },
   bannerTitle: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#FFF",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   bannerSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#FFF",
     opacity: 0.9,
   },
@@ -310,7 +455,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#F5F5F5",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
@@ -325,6 +469,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     marginBottom: 12,
+    marginTop: 8,
+  },
+  sectionTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   sectionTitle: {
     fontSize: 18,
@@ -336,110 +486,64 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: "600",
   },
-
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 40,
+  horizontalScroll: {
+    paddingLeft: 16,
+    marginBottom: 20,
   },
-  loadingText: {
-    fontSize: 14,
-    color: "#8E8E8E",
+  horizontalCard: {
+    marginRight: 12,
   },
-  emptyContainer: {
-    alignItems: "center",
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: "#8E8E8E",
-    marginTop: 4,
-  },
-
-  // Additional styles for overlay buttons
   productGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 16,
-    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    marginBottom: 12,
   },
   productCard: {
     width: PRODUCT_WIDTH,
     backgroundColor: "#FFF",
-    borderRadius: 12,
-    marginBottom: 16,
+    borderRadius: 8,
+    marginHorizontal: 4,
+    marginBottom: 12,
     overflow: "hidden",
-    // Enhanced Shadow
+    elevation: 2,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  imageContainer: {
-    position: "relative",
+    shadowRadius: 4,
   },
   productImage: {
     width: "100%",
     height: PRODUCT_WIDTH,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#F5F5F5",
   },
   discountBadge: {
     position: "absolute",
     top: 8,
     left: 8,
     backgroundColor: "#FF4444",
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 4,
   },
   discountText: {
     color: "#FFF",
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
   },
-  wishlistButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
   productInfo: {
-    padding: 12,
+    padding: 8,
   },
   productName: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.text,
-    marginBottom: 8,
-    lineHeight: 18,
-    fontWeight: "600",
+    marginBottom: 4,
     height: 36,
   },
   priceContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
-    flexWrap: "wrap",
+    marginBottom: 4,
   },
   productPrice: {
     fontSize: 16,
@@ -455,47 +559,51 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
-  },
-  ratingStars: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 6,
+    marginBottom: 4,
   },
   ratingText: {
-    fontSize: 12,
-    color: colors.text,
-    marginLeft: 4,
-    fontWeight: "500",
-  },
-  soldText: {
     fontSize: 11,
     color: "#8E8E8E",
+    marginLeft: 4,
   },
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
   },
   locationText: {
     fontSize: 11,
     color: "#8E8E8E",
-    marginLeft: 4,
-  },
-  shippingBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(76, 175, 80, 0.1)",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    alignSelf: "flex-start",
-    marginTop: 4,
-  },
-  shippingText: {
-    fontSize: 10,
-    color: "#4CAF50",
-    fontWeight: "500",
     marginLeft: 2,
+  },
+  ctaBanner: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 20,
+    borderRadius: 12,
+  },
+  ctaTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#FFF",
+    marginBottom: 4,
+  },
+  ctaSubtitle: {
+    fontSize: 13,
+    color: "#FFF",
+    opacity: 0.9,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: "#8E8E8E",
   },
 });

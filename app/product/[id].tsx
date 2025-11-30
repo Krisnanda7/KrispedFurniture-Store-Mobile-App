@@ -1,24 +1,27 @@
 // app/product/[id].tsx
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Dimensions,
+  View,
+  Text,
   Image,
   ScrollView,
-  StyleSheet,
-  Text,
   TouchableOpacity,
-  View,
+  StyleSheet,
+  Dimensions,
+  Alert,
 } from "react-native";
-import colors from "../../constants/theme";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
+import { useCart } from "../../context/CartContext";
+import colors from "../../constants/theme";
 
 const { width } = Dimensions.get("window");
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -54,13 +57,23 @@ export default function ProductDetail() {
   };
 
   const handleAddToCart = () => {
-    // Implementasi add to cart
-    alert(`${quantity} produk ditambahkan ke keranjang`);
+    addToCart(product, quantity);
+    Alert.alert(
+      "Berhasil!",
+      `${quantity} ${product.title} ditambahkan ke keranjang`,
+      [
+        { text: "Lanjut Belanja", style: "cancel" },
+        {
+          text: "Lihat Keranjang",
+          onPress: () => router.push("/(tabs)/cart"),
+        },
+      ]
+    );
   };
 
   const handleBuyNow = () => {
-    // Implementasi buy now
-    alert("Proses checkout");
+    addToCart(product, quantity);
+    router.push("/(tabs)/cart");
   };
 
   if (loading) {
