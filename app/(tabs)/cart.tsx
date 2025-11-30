@@ -183,8 +183,8 @@ export default function Cart() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Keranjang Belanja</Text>
-        <View style={{ flexDirection: "row", gap: 12 }}>
-          {/* DEBUG BUTTON - HAPUS SETELAH SELESAI! */}
+        {/* Icons Refresh dan Trash di header */}
+        {/* <View style={{ flexDirection: "row", gap: 12 }}>
           <TouchableOpacity
             onPress={handleClearStorage}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -198,7 +198,7 @@ export default function Cart() {
           >
             <Ionicons name="trash-outline" size={24} color="#FF4444" />
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
 
       {/* Cart Items */}

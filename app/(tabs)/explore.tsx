@@ -1,5 +1,5 @@
 // app/(tabs)/explore.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   ScrollView,
   Text,
@@ -11,7 +11,7 @@ import {
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import colors from "../../constants/theme";
 import { supabase } from "../../lib/supabase";
 
@@ -41,6 +41,9 @@ const PRICE_RANGES = [
 
 export default function Explore() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const scrollViewRef = useRef<ScrollView>(null);
+
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +54,27 @@ export default function Explore() {
   const [selectedSort, setSelectedSort] = useState("latest");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Set category from params when navigating from Home
+  useEffect(() => {
+    if (params.categoryId) {
+      const categoryId = parseInt(params.categoryId as string);
+      console.log(
+        "📂 Opening Explore with category:",
+        params.categoryName,
+        "ID:",
+        categoryId
+      );
+      setSelectedCategory(categoryId);
+      // DON'T auto-open filters - just apply the filter silently
+      setShowFilters(false);
+
+      // Auto scroll to results after a short delay
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: 200, animated: true });
+      }, 300);
+    }
+  }, [params.categoryId]);
 
   useEffect(() => {
     getProducts();
@@ -194,6 +218,31 @@ export default function Explore() {
         </TouchableOpacity>
       </View>
 
+      {/* Active Category Badge from Home */}
+      {params.categoryName && (
+        <View style={styles.activeCategoryBanner}>
+          <View style={styles.activeCategoryContent}>
+            <Ionicons name="pricetag" size={18} color={colors.primary} />
+            <Text style={styles.activeCategoryText}>{params.categoryName}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.clearCategoryButton}
+            onPress={() => {
+              console.log("🔄 Clearing category filter");
+              setSelectedCategory(null);
+              router.setParams({
+                categoryId: undefined,
+                categoryName: undefined,
+              });
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={styles.clearCategoryText}>Lihat Semua</Text>
+            <Ionicons name="close" size={18} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Filter Panel */}
       {showFilters && (
         <View style={styles.filterPanel}>
@@ -327,6 +376,7 @@ export default function Explore() {
 
       {/* Product Grid */}
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
@@ -481,6 +531,46 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 11,
     fontWeight: "bold",
+  },
+  activeCategoryBanner: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  activeCategoryContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  activeCategoryText: {
+    fontSize: 16,
+    color: "#FFF",
+    fontWeight: "600",
+  },
+  clearCategoryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 6,
+  },
+  clearCategoryText: {
+    fontSize: 13,
+    color: "#FFF",
+    fontWeight: "600",
   },
   filterPanel: {
     backgroundColor: "#FFF",

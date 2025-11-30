@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Dimensions,
   Alert,
+  Share,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -76,6 +77,33 @@ export default function ProductDetail() {
     router.push("/(tabs)/cart");
   };
 
+  const handleShareProduct = async () => {
+    try {
+      const deepLink = `krispedfurnitureapp://product/${product.id}`;
+      const message = `🛋️ ${product.title}\n💰 ${formatPrice(
+        product.price
+      )}\n\n🔗 Buka di app: ${deepLink}`;
+
+      const result = await Share.share({
+        message: message,
+        title: product.title,
+        url: deepLink, // iOS will use this
+      });
+
+      if (result.action === Share.sharedAction) {
+        console.log("✅ Product shared successfully!");
+        if (result.activityType) {
+          console.log("Shared via:", result.activityType);
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log("Share dismissed");
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+      Alert.alert("Error", "Gagal membagikan produk");
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -107,7 +135,10 @@ export default function ProductDetail() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={handleShareProduct}
+          >
             <Ionicons
               name="share-social-outline"
               size={24}

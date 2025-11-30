@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Dimensions,
   RefreshControl,
+  Share,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -113,6 +114,28 @@ export default function Home() {
     }).format(price);
   };
 
+  const handleShareProduct = async (item: any, event: any) => {
+    // Prevent navigation when sharing
+    event.stopPropagation();
+
+    try {
+      const deepLink = `krispedfurnitureapp://product/${item.id}`;
+      const message = `🛋️ ${item.title}\n💰 ${formatPrice(
+        item.price
+      )}\n\n🔗 Buka di app: ${deepLink}`;
+
+      await Share.share({
+        message: message,
+        title: item.title,
+        url: deepLink,
+      });
+
+      console.log("✅ Product shared:", item.title);
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
   const renderProductCard = (item: any) => (
     <TouchableOpacity
       key={item.id}
@@ -130,6 +153,17 @@ export default function Home() {
           <Text style={styles.discountText}>{item.discount}%</Text>
         </View>
       )}
+
+      {/* Share Button Overlay */}
+      <TouchableOpacity
+        style={styles.shareButtonOverlay}
+        onPress={(e) => handleShareProduct(item, e)}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <View style={styles.shareIconCircle}>
+          <Ionicons name="share-social" size={16} color={colors.primary} />
+        </View>
+      </TouchableOpacity>
 
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={2}>
@@ -184,7 +218,7 @@ export default function Home() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Selamat Datang 👋</Text>
+          <Text style={styles.greeting}>Halo! 👋</Text>
           <Text style={styles.logo}>Krisped Furniture</Text>
         </View>
         <View style={styles.headerIcons}>
@@ -246,7 +280,13 @@ export default function Home() {
             <TouchableOpacity
               key={`${cat.id}-${index}`}
               style={styles.categoryItem}
-              onPress={() => router.push("/(tabs)/explore")}
+              onPress={() => {
+                // Navigate to Explore with category filter
+                router.push({
+                  pathname: "/(tabs)/explore",
+                  params: { categoryId: cat.id, categoryName: cat.name },
+                });
+              }}
             >
               <View
                 style={[
@@ -270,7 +310,14 @@ export default function Home() {
               <Ionicons name="flash" size={24} color="#FF6B6B" />
               <Text style={styles.sectionTitle}>Flash Sale Hari Ini</Text>
             </View>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/explore")}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/explore",
+                  params: { sortBy: "discount" },
+                })
+              }
+            >
               <Text style={styles.seeAll}>Lihat Semua</Text>
             </TouchableOpacity>
           </View>
@@ -530,6 +577,25 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 12,
     fontWeight: "bold",
+  },
+  shareButtonOverlay: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 10,
+  },
+  shareIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
   productInfo: {
     padding: 8,
