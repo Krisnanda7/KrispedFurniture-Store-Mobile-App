@@ -9,10 +9,10 @@ const tintColorLight = "#0a7ea4";
 const tintColorDark = "#fff";
 
 const colors = {
-  primary: "#8B5E3C",
-  secondary: "#C19A6B",
-  background: "#F5EDE2",
-  text: "#3E2723",
+  primary: "#667eea",
+  primaryDark: "#5a67d8", // Untuk gradient
+  background: "#F8F9FA",
+  text: "#1A1A1A",
   accent: "#A67B5B",
   white: "#FFFFFF",
   border: "#E1D8CE",

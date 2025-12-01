@@ -1,17 +1,17 @@
 // app/(tabs)/explore.tsx
-import { useEffect, useState, useRef } from "react";
-import {
-  ScrollView,
-  Text,
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Dimensions,
-  TextInput,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import {
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import colors from "../../constants/theme";
 import { supabase } from "../../lib/supabase";
 
@@ -496,10 +496,16 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 44,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    height: 48,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 3,
+    borderWidth: 0.5,
+    borderColor: "#EAEAEA",
   },
   searchInput: {
     flex: 1,
@@ -735,21 +741,24 @@ const styles = StyleSheet.create({
   },
   productCard: {
     width: PRODUCT_WIDTH,
-    backgroundColor: "#FFF",
-    borderRadius: 8,
-    marginHorizontal: 4,
-    marginBottom: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    marginHorizontal: 6,
+    marginBottom: 16,
     overflow: "hidden",
-    elevation: 2,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 0.5,
+    borderColor: "#EDEDED",
   },
+
   productImage: {
     width: "100%",
-    height: PRODUCT_WIDTH,
-    backgroundColor: "#F5F5F5",
+    height: PRODUCT_WIDTH + 20,
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
   },
   discountBadge: {
     position: "absolute",
@@ -769,10 +778,11 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   productName: {
-    fontSize: 13,
-    color: colors.text,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#2A2A2A",
     marginBottom: 4,
-    height: 36,
+    lineHeight: 18,
   },
   priceContainer: {
     flexDirection: "row",
@@ -780,10 +790,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   productPrice: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: colors.primary,
-    marginRight: 6,
   },
   originalPrice: {
     fontSize: 12,

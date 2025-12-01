@@ -1,18 +1,21 @@
 // app/(tabs)/home.tsx
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ScrollView,
-  Text,
-  View,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
   Dimensions,
+  Image,
+  Platform,
   RefreshControl,
+  ScrollView,
   Share,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import colors from "../../constants/theme";
 import { supabase } from "../../lib/supabase";
 
@@ -24,32 +27,64 @@ const PROMO_BANNERS = [
     id: 1,
     title: "Flash Sale 50%",
     subtitle: "Hemat hingga 2 juta",
-    color: "#FF6B6B",
+    gradient: ["#FF6B6B", "#FF8E8E"],
     icon: "flash",
   },
   {
     id: 2,
     title: "Gratis Ongkir",
     subtitle: "Min. belanja 100rb",
-    color: "#4ECDC4",
+    gradient: ["#4ECDC4", "#6DD5CD"],
     icon: "car",
   },
   {
     id: 3,
     title: "Cashback 20%",
     subtitle: "Maks. 50rb",
-    color: "#FFB347",
+    gradient: ["#FFB347", "#FFC870"],
     icon: "wallet",
   },
 ];
 
 const QUICK_CATEGORIES = [
-  { id: 1, name: "Sofa", icon: "bed-outline", color: "#FF6B6B" },
-  { id: 2, name: "Meja", icon: "desktop-outline", color: "#4ECDC4" },
-  { id: 1, name: "Kursi", icon: "restaurant-outline", color: "#95E1D3" },
-  { id: 2, name: "Lemari", icon: "albums-outline", color: "#FFB347" },
-  { id: 2, name: "Rak", icon: "grid-outline", color: "#AA96DA" },
-  { id: 1, name: "Kasur", icon: "bed-outline", color: "#FCBAD3" },
+  {
+    id: 1,
+    name: "Kursi",
+    icon: "restaurant-outline",
+    gradient: ["#95E1D3", "#B2E8DD"],
+  },
+
+  {
+    id: 2,
+    name: "Meja",
+    icon: "desktop-outline",
+    gradient: ["#4ECDC4", "#6DD5CD"],
+  },
+  {
+    id: 3,
+    name: "Sofa",
+    icon: "bed-outline",
+    gradient: ["#FF6B6B", "#FF8E8E"],
+  },
+
+  {
+    id: 4,
+    name: "Lemari",
+    icon: "albums-outline",
+    gradient: ["#FFB347", "#FFC870"],
+  },
+  {
+    id: 5,
+    name: "Rak",
+    icon: "grid-outline",
+    gradient: ["#AA96DA", "#C0AEE6"],
+  },
+  {
+    id: 6,
+    name: "Kasur",
+    icon: "bed-outline",
+    gradient: ["#FCBAD3", "#FDC9DE"],
+  },
 ];
 
 export default function Home() {
@@ -68,7 +103,6 @@ export default function Home() {
     try {
       setLoading(true);
 
-      // Get featured products (dengan diskon)
       const { data: featured } = await supabase
         .from("products")
         .select("*")
@@ -76,14 +110,12 @@ export default function Home() {
         .order("discount", { ascending: false })
         .limit(6);
 
-      // Get popular products (terlaris)
       const { data: popular } = await supabase
         .from("products")
         .select("*")
         .order("sold", { ascending: false })
         .limit(6);
 
-      // Get new products (terbaru)
       const { data: newest } = await supabase
         .from("products")
         .select("*")
@@ -115,7 +147,6 @@ export default function Home() {
   };
 
   const handleShareProduct = async (item: any, event: any) => {
-    // Prevent navigation when sharing
     event.stopPropagation();
 
     try {
@@ -141,29 +172,46 @@ export default function Home() {
       key={item.id}
       style={styles.productCard}
       onPress={() => router.push(`/product/${item.id}`)}
+      activeOpacity={0.7}
     >
-      <Image
-        source={{ uri: item.image_url || "https://via.placeholder.com/200" }}
-        style={styles.productImage}
-        resizeMode="cover"
-      />
+      <View style={styles.productImageContainer}>
+        <Image
+          source={{ uri: item.image_url || "https://via.placeholder.com/200" }}
+          style={styles.productImage}
+          resizeMode="cover"
+        />
 
-      {item.discount && (
-        <View style={styles.discountBadge}>
-          <Text style={styles.discountText}>{item.discount}%</Text>
-        </View>
-      )}
+        {/* Gradient Overlay */}
+        <LinearGradient
+          colors={["transparent", "rgba(0,0,0,0.05)"]}
+          style={styles.imageGradient}
+        />
 
-      {/* Share Button Overlay */}
-      <TouchableOpacity
-        style={styles.shareButtonOverlay}
-        onPress={(e) => handleShareProduct(item, e)}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <View style={styles.shareIconCircle}>
-          <Ionicons name="share-social" size={16} color={colors.primary} />
-        </View>
-      </TouchableOpacity>
+        {item.discount && (
+          <View style={styles.discountBadge}>
+            <LinearGradient
+              colors={["#FF4444", "#FF6666"]}
+              style={styles.discountGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.discountText}>-{item.discount}%</Text>
+            </LinearGradient>
+          </View>
+        )}
+
+        {/* Share Button */}
+        <TouchableOpacity
+          style={styles.shareButtonOverlay}
+          onPress={(e) => handleShareProduct(item, e)}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.8}
+        >
+          <View style={styles.shareIconCircle}>
+            <Ionicons name="share-social" size={16} color={colors.primary} />
+          </View>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={2}>
@@ -179,15 +227,17 @@ export default function Home() {
           )}
         </View>
 
-        <View style={styles.ratingContainer}>
-          <Ionicons name="star" size={14} color="#FFA500" />
-          <Text style={styles.ratingText}>
-            {item.rating || "4.5"} | Terjual {item.sold || "100+"}
-          </Text>
+        <View style={styles.metaContainer}>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="star" size={12} color="#FFA500" />
+            <Text style={styles.ratingText}>{item.rating || "4.5"}</Text>
+          </View>
+          <View style={styles.divider} />
+          <Text style={styles.soldText}>Terjual {item.sold || "100+"}</Text>
         </View>
 
         <View style={styles.locationContainer}>
-          <Ionicons name="location-outline" size={12} color="#8E8E8E" />
+          <Ionicons name="location" size={11} color="#9CA3AF" />
           <Text style={styles.locationText}>{item.location || "Jakarta"}</Text>
         </View>
       </View>
@@ -197,199 +247,356 @@ export default function Home() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.logo}>Krisped Furniture</Text>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={colors.background}
+        />
+        <View style={styles.headerGradient}>
+          <LinearGradient
+            colors={[colors.primary + "10", colors.background]}
+            style={styles.headerGradientInner}
+          >
+            <View style={styles.header}>
+              <View style={styles.logoContainer}>
+                <View style={styles.logoCircle}>
+                  <Ionicons name="home" size={24} color={colors.primary} />
+                </View>
+                <Text style={styles.logo}>Krisped Furniture</Text>
+              </View>
+            </View>
+          </LinearGradient>
         </View>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Memuat...</Text>
+          <View style={styles.loadingSpinner}>
+            <Ionicons name="refresh" size={40} color={colors.primary} />
+          </View>
+          <Text style={styles.loadingText}>Memuat produk terbaik...</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Halo! 👋</Text>
-          <Text style={styles.logo}>Krisped Furniture</Text>
-        </View>
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="mail-outline" size={24} color={colors.text} />
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>2</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={colors.text}
-            />
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>3</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      {/* Search Bar - Navigate to Explore */}
-      <TouchableOpacity
-        style={styles.searchButton}
-        onPress={() => router.push("/(tabs)/explore")}
-      >
-        <Ionicons name="search-outline" size={20} color="#8E8E8E" />
-        <Text style={styles.searchPlaceholder}>Cari furniture...</Text>
-      </TouchableOpacity>
-
-      {/* Promo Banners */}
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.bannerContainer}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
       >
-        {PROMO_BANNERS.map((banner) => (
-          <TouchableOpacity key={banner.id} style={styles.banner}>
-            <View
-              style={[styles.bannerContent, { backgroundColor: banner.color }]}
-            >
-              <View style={styles.bannerIcon}>
-                <Ionicons name={banner.icon as any} size={32} color="#FFF" />
+        {/* Header with Gradient */}
+        <View style={styles.headerGradient}>
+          <LinearGradient
+            colors={[colors.primary + "15", colors.background]}
+            style={styles.headerGradientInner}
+          >
+            <View style={styles.header}>
+              <View style={styles.headerLeft}>
+                {/* <Text style={styles.greeting}>Selamat Datang 👋</Text> */}
+                <View style={styles.logoContainer}>
+                  <View style={styles.logoCircle}>
+                    <Ionicons name="home" size={20} color={colors.primary} />
+                  </View>
+                  <Text style={styles.logo}>Krisped Furniture</Text>
+                </View>
               </View>
-              <View>
-                <Text style={styles.bannerTitle}>{banner.title}</Text>
-                <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
+
+              <View style={styles.headerIcons}>
+                <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+                  <View style={styles.iconCircle}>
+                    <Ionicons
+                      name="mail-outline"
+                      size={22}
+                      color={colors.text}
+                    />
+                  </View>
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>2</Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+                  <View style={styles.iconCircle}>
+                    <Ionicons
+                      name="notifications-outline"
+                      size={22}
+                      color={colors.text}
+                    />
+                  </View>
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>3</Text>
+                  </View>
+                </TouchableOpacity>
               </View>
             </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+          </LinearGradient>
+        </View>
 
-      {/* Quick Categories */}
-      <View style={styles.categoryContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {QUICK_CATEGORIES.map((cat, index) => (
+        {/* Enhanced Search Bar */}
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={() => router.push("/(tabs)/explore")}
+          activeOpacity={0.7}
+        >
+          <View style={styles.searchIconContainer}>
+            <Ionicons name="search" size={20} color={colors.primary} />
+          </View>
+          <Text style={styles.searchPlaceholder}>
+            Cari furniture impian Anda...
+          </Text>
+          <Ionicons name="options-outline" size={20} color="#9CA3AF" />
+        </TouchableOpacity>
+
+        {/* Premium Promo Banners */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.bannerContainer}
+          contentContainerStyle={styles.bannerContent}
+        >
+          {PROMO_BANNERS.map((banner, index) => (
             <TouchableOpacity
-              key={`${cat.id}-${index}`}
-              style={styles.categoryItem}
-              onPress={() => {
-                // Navigate to Explore with category filter
-                router.push({
-                  pathname: "/(tabs)/explore",
-                  params: { categoryId: cat.id, categoryName: cat.name },
-                });
-              }}
+              key={banner.id}
+              style={[styles.banner, index === 0 && styles.firstBanner]}
+              activeOpacity={0.8}
             >
-              <View
-                style={[
-                  styles.categoryIcon,
-                  { backgroundColor: cat.color + "20" },
-                ]}
+              <LinearGradient
+                colors={banner.gradient}
+                style={styles.bannerGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
               >
-                <Ionicons name={cat.icon as any} size={28} color={cat.color} />
-              </View>
-              <Text style={styles.categoryText}>{cat.name}</Text>
+                <View style={styles.bannerIcon}>
+                  <View style={styles.bannerIconInner}>
+                    <Ionicons
+                      name={banner.icon as any}
+                      size={28}
+                      color="#FFF"
+                    />
+                  </View>
+                </View>
+                <View style={styles.bannerTextContainer}>
+                  <Text style={styles.bannerTitle}>{banner.title}</Text>
+                  <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
+                  <View style={styles.bannerArrow}>
+                    <Ionicons name="arrow-forward" size={14} color="#FFF" />
+                  </View>
+                </View>
+              </LinearGradient>
             </TouchableOpacity>
           ))}
         </ScrollView>
-      </View>
 
-      {/* Featured Products (Flash Sale) */}
-      {featuredProducts.length > 0 && (
-        <>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleContainer}>
-              <Ionicons name="flash" size={24} color="#FF6B6B" />
-              <Text style={styles.sectionTitle}>Flash Sale Hari Ini</Text>
-            </View>
-            <TouchableOpacity
-              onPress={() =>
-                router.push({
-                  pathname: "/(tabs)/explore",
-                  params: { sortBy: "discount" },
-                })
-              }
-            >
-              <Text style={styles.seeAll}>Lihat Semua</Text>
-            </TouchableOpacity>
-          </View>
-
+        {/* Elegant Categories */}
+        <View style={styles.categorySection}>
+          <Text style={styles.categoryTitle}>Kategori Pilihan</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={styles.horizontalScroll}
+            contentContainerStyle={styles.categoryContent}
           >
-            {featuredProducts.map((item) => (
-              <View key={item.id} style={styles.horizontalCard}>
-                {renderProductCard(item)}
-              </View>
+            {QUICK_CATEGORIES.map((cat, index) => (
+              <TouchableOpacity
+                key={`${cat.id}-${index}`}
+                style={styles.categoryItem}
+                onPress={() => {
+                  router.push({
+                    pathname: "/(tabs)/explore",
+                    params: { categoryId: cat.id, categoryName: cat.name },
+                  });
+                }}
+                activeOpacity={0.7}
+              >
+                <LinearGradient
+                  colors={cat.gradient}
+                  style={styles.categoryIconGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Ionicons name={cat.icon as any} size={26} color="#FFF" />
+                </LinearGradient>
+                <Text style={styles.categoryText}>{cat.name}</Text>
+              </TouchableOpacity>
             ))}
           </ScrollView>
-        </>
-      )}
-
-      {/* Popular Products */}
-      {popularProducts.length > 0 && (
-        <>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleContainer}>
-              <Ionicons name="flame" size={24} color="#FF6B6B" />
-              <Text style={styles.sectionTitle}>Terlaris Minggu Ini</Text>
-            </View>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/explore")}>
-              <Text style={styles.seeAll}>Lihat Semua</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.productGrid}>
-            {popularProducts.slice(0, 4).map(renderProductCard)}
-          </View>
-        </>
-      )}
-
-      {/* New Products */}
-      {newProducts.length > 0 && (
-        <>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleContainer}>
-              <Ionicons name="sparkles" size={24} color="#4ECDC4" />
-              <Text style={styles.sectionTitle}>Produk Terbaru</Text>
-            </View>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/explore")}>
-              <Text style={styles.seeAll}>Lihat Semua</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.productGrid}>
-            {newProducts.slice(0, 4).map(renderProductCard)}
-          </View>
-        </>
-      )}
-
-      {/* CTA Banner */}
-      <TouchableOpacity
-        style={styles.ctaBanner}
-        onPress={() => router.push("/(tabs)/explore")}
-      >
-        <View>
-          <Text style={styles.ctaTitle}>Jelajahi Semua Produk</Text>
-          <Text style={styles.ctaSubtitle}>
-            Lebih dari 100+ furniture berkualitas
-          </Text>
         </View>
-        <Ionicons name="arrow-forward" size={24} color="#FFF" />
-      </TouchableOpacity>
 
-      <View style={{ height: 20 }} />
-    </ScrollView>
+        {/* Featured Products */}
+        {featuredProducts.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleContainer}>
+                <View style={styles.sectionIconContainer}>
+                  <LinearGradient
+                    colors={["#FF6B6B", "#FF8E8E"]}
+                    style={styles.sectionIconGradient}
+                  >
+                    <Ionicons name="flash" size={18} color="#FFF" />
+                  </LinearGradient>
+                </View>
+                <View>
+                  <Text style={styles.sectionTitle}>Flash Sale</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Berakhir dalam 2 jam
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: "/(tabs)/explore",
+                    params: { sortBy: "discount" },
+                  })
+                }
+                activeOpacity={0.7}
+              >
+                <View style={styles.seeAllButton}>
+                  <Text style={styles.seeAll}>Lihat Semua</Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={colors.primary}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.horizontalScroll}
+              contentContainerStyle={styles.horizontalScrollContent}
+            >
+              {featuredProducts.map((item) => (
+                <View key={item.id} style={styles.horizontalCard}>
+                  {renderProductCard(item)}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Popular Products */}
+        {popularProducts.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleContainer}>
+                <View style={styles.sectionIconContainer}>
+                  <LinearGradient
+                    colors={["#FF6B6B", "#FF8E8E"]}
+                    style={styles.sectionIconGradient}
+                  >
+                    <Ionicons name="flame" size={18} color="#FFF" />
+                  </LinearGradient>
+                </View>
+                <View>
+                  <Text style={styles.sectionTitle}>Terlaris</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Produk favorit pelanggan
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                onPress={() => router.push("/(tabs)/explore")}
+                activeOpacity={0.7}
+              >
+                <View style={styles.seeAllButton}>
+                  <Text style={styles.seeAll}>Lihat Semua</Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={colors.primary}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.productGrid}>
+              {popularProducts.slice(0, 4).map(renderProductCard)}
+            </View>
+          </View>
+        )}
+
+        {/* New Products */}
+        {newProducts.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleContainer}>
+                <View style={styles.sectionIconContainer}>
+                  <LinearGradient
+                    colors={["#4ECDC4", "#6DD5CD"]}
+                    style={styles.sectionIconGradient}
+                  >
+                    <Ionicons name="sparkles" size={18} color="#FFF" />
+                  </LinearGradient>
+                </View>
+                <View>
+                  <Text style={styles.sectionTitle}>Produk Terbaru</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Koleksi terkini kami
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                onPress={() => router.push("/(tabs)/explore")}
+                activeOpacity={0.7}
+              >
+                <View style={styles.seeAllButton}>
+                  <Text style={styles.seeAll}>Lihat Semua</Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={colors.primary}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.productGrid}>
+              {newProducts.slice(0, 4).map(renderProductCard)}
+            </View>
+          </View>
+        )}
+
+        {/* Premium CTA Banner */}
+        <TouchableOpacity
+          style={styles.ctaBannerContainer}
+          onPress={() => router.push("/(tabs)/explore")}
+          activeOpacity={0.9}
+        >
+          <LinearGradient
+            colors={[colors.primary, colors.primary + "DD"]}
+            style={styles.ctaBanner}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.ctaContent}>
+              <View style={styles.ctaIconCircle}>
+                <Ionicons name="storefront" size={28} color="#FFF" />
+              </View>
+              <View style={styles.ctaTextContainer}>
+                <Text style={styles.ctaTitle}>Jelajahi Semua Produk</Text>
+                <Text style={styles.ctaSubtitle}>
+                  100+ furniture berkualitas menanti Anda
+                </Text>
+              </View>
+            </View>
+            <View style={styles.ctaArrow}>
+              <Ionicons name="arrow-forward" size={24} color="#FFF" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -398,24 +605,47 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  headerGradient: {
+    backgroundColor: colors.background,
+  },
+  headerGradientInner: {
+    paddingTop: Platform.OS === "ios" ? 50 : 40,
+    paddingBottom: 20,
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 12,
-    backgroundColor: colors.background,
+    paddingHorizontal: 20,
+  },
+  headerLeft: {
+    flex: 1,
   },
   greeting: {
     fontSize: 14,
-    color: "#8E8E8E",
-    marginBottom: 2,
+    color: "#6B7280",
+    marginBottom: 8,
+    fontWeight: "500",
+    letterSpacing: 0.3,
+  },
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  logoCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: colors.primary + "15",
+    justifyContent: "center",
+    alignItems: "center",
   },
   logo: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontWeight: "800",
     color: colors.primary,
+    letterSpacing: -0.5,
   },
   headerIcons: {
     flexDirection: "row",
@@ -424,109 +654,205 @@ const styles = StyleSheet.create({
   iconButton: {
     position: "relative",
   },
-  badge: {
-    position: "absolute",
-    top: -4,
-    right: -4,
-    backgroundColor: "#FF4444",
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#F9FAFB",
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+  },
+  badge: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    backgroundColor: "#EF4444",
+    borderRadius: 12,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: colors.background,
   },
   badgeText: {
     color: "#FFF",
     fontSize: 10,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
   searchButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
-    marginHorizontal: 16,
-    marginVertical: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: "#FFF",
+    marginHorizontal: 20,
+    marginTop: 4,
+    marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  searchIconContainer: {
+    marginRight: 12,
   },
   searchPlaceholder: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: "#8E8E8E",
+    flex: 1,
+    fontSize: 15,
+    color: "#9CA3AF",
+    fontWeight: "500",
   },
   bannerContainer: {
-    paddingLeft: 16,
-    marginVertical: 12,
+    marginBottom: 24,
+  },
+  bannerContent: {
+    paddingLeft: 20,
+    paddingRight: 8,
   },
   banner: {
     marginRight: 12,
   },
-  bannerContent: {
-    width: 200,
-    height: 100,
-    borderRadius: 12,
-    padding: 16,
+  firstBanner: {
+    marginLeft: 0,
+  },
+  bannerGradient: {
+    width: 280,
+    height: 140,
+    borderRadius: 20,
+    padding: 20,
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
   bannerIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    marginRight: 16,
+  },
+  bannerIconInner: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.25)",
     justifyContent: "center",
     alignItems: "center",
   },
+  bannerTextContainer: {
+    flex: 1,
+  },
   bannerTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "800",
     color: "#FFF",
-    marginBottom: 2,
+    marginBottom: 6,
+    letterSpacing: -0.3,
   },
   bannerSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#FFF",
-    opacity: 0.9,
+    opacity: 0.95,
+    fontWeight: "500",
+    marginBottom: 8,
   },
-  categoryContainer: {
-    paddingLeft: 16,
-    marginBottom: 20,
+  bannerArrow: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "flex-start",
+  },
+  categorySection: {
+    marginBottom: 24,
+  },
+  categoryTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.text,
+    marginBottom: 16,
+    paddingHorizontal: 20,
+    letterSpacing: -0.3,
+  },
+  categoryContent: {
+    paddingLeft: 20,
+    paddingRight: 8,
   },
   categoryItem: {
     alignItems: "center",
-    marginRight: 20,
+    marginRight: 16,
   },
-  categoryIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  categoryIconGradient: {
+    width: 68,
+    height: 68,
+    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   categoryText: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.text,
+    fontWeight: "600",
+    letterSpacing: -0.2,
+  },
+  section: {
+    marginBottom: 24,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    marginTop: 8,
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
   sectionTitleContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 12,
+  },
+  sectionIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  sectionIconGradient: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "800",
     color: colors.text,
+    letterSpacing: -0.5,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    marginTop: 2,
+    fontWeight: "500",
+  },
+  seeAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   seeAll: {
     fontSize: 14,
@@ -534,8 +860,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   horizontalScroll: {
-    paddingLeft: 16,
-    marginBottom: 20,
+    paddingLeft: 20,
+  },
+  horizontalScrollContent: {
+    paddingRight: 8,
   },
   horizontalCard: {
     marginRight: 12,
@@ -543,133 +871,204 @@ const styles = StyleSheet.create({
   productGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 12,
-    marginBottom: 12,
+    paddingHorizontal: 16,
   },
   productCard: {
     width: PRODUCT_WIDTH,
     backgroundColor: "#FFF",
-    borderRadius: 8,
+    borderRadius: 16,
     marginHorizontal: 4,
     marginBottom: 12,
     overflow: "hidden",
-    elevation: 2,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  productImageContainer: {
+    position: "relative",
   },
   productImage: {
     width: "100%",
     height: PRODUCT_WIDTH,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#F9FAFB",
+  },
+  imageGradient: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 40,
   },
   discountBadge: {
     position: "absolute",
-    top: 8,
-    left: 8,
-    backgroundColor: "#FF4444",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    top: 10,
+    left: 10,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  discountGradient: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   discountText: {
     color: "#FFF",
     fontSize: 12,
-    fontWeight: "bold",
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
   shareButtonOverlay: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    zIndex: 10,
+    top: 10,
+    right: 10,
   },
   shareIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "rgba(255, 255, 255, 0.95)",
     justifyContent: "center",
     alignItems: "center",
-    elevation: 2,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   productInfo: {
-    padding: 8,
+    padding: 12,
   },
   productName: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.text,
-    marginBottom: 4,
-    height: 36,
+    marginBottom: 8,
+    height: 38,
+    fontWeight: "600",
+    letterSpacing: -0.2,
+    lineHeight: 19,
   },
   priceContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 8,
   },
   productPrice: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 17,
+    fontWeight: "800",
     color: colors.primary,
-    marginRight: 6,
+    marginRight: 8,
+    letterSpacing: -0.3,
   },
   originalPrice: {
-    fontSize: 12,
-    color: "#8E8E8E",
+    fontSize: 13,
+    color: "#9CA3AF",
     textDecorationLine: "line-through",
+    fontWeight: "500",
+  },
+  metaContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
   },
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
+    gap: 4,
   },
   ratingText: {
-    fontSize: 11,
-    color: "#8E8E8E",
-    marginLeft: 4,
+    fontSize: 12,
+    color: "#6B7280",
+    fontWeight: "600",
+  },
+  divider: {
+    width: 1,
+    height: 12,
+    backgroundColor: "#E5E7EB",
+    marginHorizontal: 8,
+  },
+  soldText: {
+    fontSize: 12,
+    color: "#6B7280",
+    fontWeight: "500",
   },
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 4,
   },
   locationText: {
     fontSize: 11,
-    color: "#8E8E8E",
-    marginLeft: 2,
+    color: "#9CA3AF",
+    fontWeight: "500",
+  },
+  ctaBannerContainer: {
+    marginHorizontal: 20,
+    marginTop: 8,
+    borderRadius: 20,
+    overflow: "hidden",
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   ctaBanner: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: colors.primary,
-    marginHorizontal: 16,
-    marginTop: 12,
-    padding: 20,
-    borderRadius: 12,
+    padding: 24,
+  },
+  ctaContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: 16,
+  },
+  ctaIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  ctaTextContainer: {
+    flex: 1,
   },
   ctaTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "800",
     color: "#FFF",
     marginBottom: 4,
+    letterSpacing: -0.3,
   },
   ctaSubtitle: {
     fontSize: 13,
     color: "#FFF",
-    opacity: 0.9,
+    opacity: 0.95,
+    fontWeight: "500",
+  },
+  ctaArrow: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 40,
+    paddingVertical: 60,
+  },
+  loadingSpinner: {
+    marginBottom: 16,
   },
   loadingText: {
-    fontSize: 14,
-    color: "#8E8E8E",
+    fontSize: 15,
+    color: "#9CA3AF",
+    fontWeight: "500",
   },
 });
