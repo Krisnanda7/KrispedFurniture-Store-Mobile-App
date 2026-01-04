@@ -334,6 +334,20 @@ export default function Home() {
                     <Text style={styles.badgeText}>3</Text>
                   </View>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  activeOpacity={0.7}
+                  onPress={() => router.push("/admin")}
+                >
+                  <View style={styles.iconCircle}>
+                    <Ionicons
+                      name="person-outline"
+                      size={22}
+                      color={colors.primary}
+                    />
+                  </View>
+                </TouchableOpacity>
               </View>
             </View>
           </LinearGradient>
