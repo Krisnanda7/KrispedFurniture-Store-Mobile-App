@@ -1,13 +1,26 @@
 // app/(tabs)/_layout.tsx
-import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, StyleSheet } from "react-native";
-import { useCart } from "../../context/CartContext";
+import Airbridge from "airbridge-react-native-sdk";
+import { Tabs } from "expo-router";
+import { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import colors from "../../constants/theme";
+import { useCart } from "../../context/CartContext";
 
 function CartIcon({ color }: { color: string }) {
   const { getCartItemsCount } = useCart();
   const count = getCartItemsCount();
+
+  useEffect(() => {
+    if (Airbridge && (Airbridge as any).init) {
+      (Airbridge as any).init(
+        "krispedfurnitureapp",
+        "df88f79d2b414d4390ad5bef3aba767c"
+      );
+    } else {
+      console.log("Airbridge is not available");
+    }
+  }, []);
 
   return (
     <View style={styles.iconContainer}>

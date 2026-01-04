@@ -46,6 +46,8 @@
       "reactCompiler": true
     },
     "extra": {
+      "EXPO_PUBLIC_SUPABASE_URL": "https://jfaozszjvsnyzefpvmii.supabase.co",
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmYW96c3pqdnNueXplZnB2bWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTI2NTAsImV4cCI6MjA3OTgyODY1MH0.mnHiUqWY8sp9LhjY0GQTTwNfF7Om_QphhCEowm49Sc4",
       "router": {},
       "eas": {
         "projectId": "6217f7a4-bef0-4b0e-9fc8-3d3ff666ac1a"
