@@ -43,16 +43,10 @@ Aplikasi ini dikembangkan dan sudah terhubung dengan **Supabase** .
 
 
 ## 📱 Tampilan Aplikasi (Preview)
-<img width="427" height="846" alt="Screenshot 2025-10-29 031309" src="https://github.com/user-attachments/assets/c88ba930-64c7-43fb-8794-dffc1fae1918" /> <img width="460" height="847" alt="Screenshot 2025-10-29 031650" src="https://github.com/user-attachments/assets/2b3186f2-1cb7-425e-8a11-77d6d6da6a31" />
-<img width="446" height="845" alt="Screenshot 2025-10-29 031713" src="https://github.com/user-attachments/assets/6e6a1678-f201-43b7-9f9f-8ca0d05aad12" /><img width="445" height="847" alt="Screenshot 2025-10-29 031722" src="https://github.com/user-attachments/assets/d4842978-723c-4473-9f01-0f092b4d1423" />
-<img width="441" height="835" alt="Screenshot 2025-10-29 031728" src="https://github.com/user-attachments/assets/802d9b9a-9894-49e8-ad8a-83dfe9537259" /><img width="443" height="838" alt="Screenshot 2025-10-29 031733" src="https://github.com/user-attachments/assets/fef8b86a-1ac1-4ca2-9d0c-888320b2e42d" />
-<img width="427" height="848" alt="Screenshot 2025-10-29 031752" src="https://github.com/user-attachments/assets/3790b3fc-9436-4e93-add2-7d61c9da1cf5" /><img width="450" height="861" alt="Screenshot 2025-10-29 031758" src="https://github.com/user-attachments/assets/bd431180-5621-488e-9eb1-d54c276451ec" />
-<img width="448" height="859" alt="Screenshot 2025-10-29 031809" src="https://github.com/user-attachments/assets/a83830cd-5ce4-4ceb-b819-6d8c25fad25e" /><img width="427" height="851" alt="Screenshot 2025-10-29 031845" src="https://github.com/user-attachments/assets/e558304e-e264-4bb5-8f54-4e4b53657192" />
-<img width="444" height="867" alt="Screenshot 2025-10-29 031910" src="https://github.com/user-attachments/assets/68223652-8a5b-42fd-904d-ba3c97401d3b" /><img width="448" height="844" alt="Screenshot 2025-10-29 031934" src="https://github.com/user-attachments/assets/aa9f7f38-0e34-4117-9ffb-2661614c5668" />
-
-
-
-
+<img width="386" height="896" alt="Screenshot 2026-01-07 023541" src="https://github.com/user-attachments/assets/335f79ce-bc3b-4e82-96d4-ec0b1960cce8" /> <img width="386" height="889" alt="Screenshot 2026-01-07 023631" src="https://github.com/user-attachments/assets/d7ec284a-3674-4431-bbe2-4b9d5934fe83" />
+<img width="380" height="889" alt="Screenshot 2026-01-07 024034" src="https://github.com/user-attachments/assets/1e7c2324-8639-4739-b0fd-4b691b5e476a" /> <img width="384" height="892" alt="Screenshot 2026-01-07 024047" src="https://github.com/user-attachments/assets/76ab92d2-bd6f-4a71-87a7-4585064abfd8" />
+<img width="385" height="894" alt="Screenshot 2026-01-07 024101" src="https://github.com/user-attachments/assets/d3b69190-7aa8-4683-a98b-2e20489139d5" /> <img width="383" height="893" alt="Screenshot 2026-01-07 024129" src="https://github.com/user-attachments/assets/06c6cb0d-7217-47f6-814b-0f8c166ef56a" />
+<img width="386" height="887" alt="Screenshot 2026-01-07 024143" src="https://github.com/user-attachments/assets/e40caba2-247c-458d-8585-472a427114db" /> <img width="388" height="893" alt="Screenshot 2026-01-07 024156" src="https://github.com/user-attachments/assets/d7e7798b-0be2-4535-9559-5081eee8bc8c" />
 
 ---
 ## Link Video Loom 
