@@ -117,7 +117,7 @@ krisped-furniture-app/
 
 ```bash
 # 1️⃣ Clone repository
-git clone https://github.com/username/krisped-app.git
+git clone [https://github.com/username/krisped-app.git](https://github.com/Krisnanda7/KrispedFurniture-Store-Mobile-App.git)
 
 # 2️⃣ Masuk ke folder proyek
 cd krisped-app
