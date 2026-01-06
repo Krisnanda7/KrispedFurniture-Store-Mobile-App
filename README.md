@@ -1,4 +1,4 @@
-# 🏺 KRISPED FURNITURE STORE — Simple E-commerce App About Funiture
+# 🛒 KRISPED FURNITURE STORE — Simple E-commerce App About Funiture
 
 # **Developed by:**  
 # I Dewa Gede Mas Bagus Krisnanda (2301020058)   
