@@ -56,73 +56,67 @@ Aplikasi ini dikembangkan dan sudah terhubung dengan **Supabase** .
 
 Berikut gambaran struktur folder proyek:
 
-krisped-furniture-app/
-│
-├── .expo/                      # Konfigurasi Expo
-├── .idea/                      # Konfigurasi IDE
-├── .vscode/                    # Konfigurasi VS Code
-├── android/                    # Build Android native
-│
-├── app/                        # Folder utama aplikasi
-│   ├── (tabs)/                # Navigasi tab utama
-│   │   ├── _layout.tsx        # Layout tab navigation
-│   │   ├── admin.tsx          # Halaman admin
-│   │   ├── cart.tsx           # Halaman keranjang belanja
-│   │   ├── explore.tsx        # Halaman eksplorasi produk
-│   │   └── home.tsx           # Halaman beranda
-│   │
-│   ├── admin/                 # Fitur admin
-│   │   ├── addProduct.tsx     # Tambah produk baru
-│   │   ├── editProduct.tsx    # Edit produk
-│   │   └── index.tsx          # Dashboard admin
-│   │
-│   ├── auth/                  # Autentikasi
-│   │   ├── login.tsx          # Halaman login
-│   │   └── register.tsx       # Halaman registrasi
-│   │
-│   └── product/               # Detail produk
-│       ├── [id].tsx           # Dynamic route produk by ID
-│       ├── _layout.tsx        # Layout halaman produk
-│       ├── index.tsx          # List produk
-│       └── modal.tsx          # Modal produk
-│
-├── assets/                    # Asset statis (gambar, font, dll)
-│
-├── components/                # Komponen React reusable
-│
-├── constants/                 # Konstanta aplikasi
-│   └── theme.ts              # Tema dan styling
-│
-├── context/                   # React Context
-│   └── CartContext.tsx       # State management keranjang
-│
-├── hooks/                     # Custom React hooks
-│
-├── lib/                       # Library dan utilities
-│   └── supabase.ts           # Konfigurasi Supabase
-│
-├── node_modules/              # Dependencies
-│
-├── scripts/                   # Script automation
-│   └── reset-project.js      # Reset project script
-│
-├── services/                  # Service layer
-│   └── cartService.ts        # Service keranjang belanja
-│
-├── store/                     # State management (Redux/Zustand)
-│   └── auth.ts               # Store autentikasi
-│
-├── .env                       # Environment variables
-├── .gitignore                # Git ignore configuration
-├── app.json                  # Konfigurasi Expo app
-├── eas.json                  # Expo Application Services config
-├── eslint.config.js          # ESLint configuration
-├── expo-env.d.ts             # TypeScript definitions Expo
-├── package-lock.json         # Lock file dependencies
-├── package.json              # Dependencies dan scripts
-├── README.md                 # Dokumentasi project
-└── tsconfig.json             # TypeScript configuration
+Root Directory
 
+.expo/ - Konfigurasi Expo
+.idea/ - Konfigurasi IDE
+.vscode/ - Konfigurasi VS Code
+android/ - Build Android native
+node_modules/ - Dependencies
+
+app/
+Folder utama aplikasi dengan struktur:
+(tabs)/
+Navigasi tab utama:
+
+_layout.tsx - Layout tab navigation
+admin.tsx - Halaman admin
+cart.tsx - Halaman keranjang belanja
+explore.tsx - Halaman eksplorasi produk
+home.tsx - Halaman beranda
+
+admin/
+Fitur administrasi:
+
+addProduct.tsx - Tambah produk baru
+editProduct.tsx - Edit produk
+index.tsx - Dashboard admin
+
+auth/
+Sistem autentikasi:
+
+login.tsx - Halaman login
+register.tsx - Halaman registrasi
+
+product/
+Manajemen produk:
+
+[id].tsx - Dynamic route produk by ID
+_layout.tsx - Layout halaman produk
+index.tsx - List produk
+modal.tsx - Modal produk
+
+Folder Lainnya
+
+assets/ - Asset statis (gambar, font, dll)
+components/ - Komponen React reusable
+constants/ - Konstanta aplikasi dan tema
+context/ - React Context (CartContext)
+hooks/ - Custom React hooks
+lib/ - Library dan utilities (Supabase config)
+services/ - Service layer (cartService)
+store/ - State management (auth)
+scripts/ - Script automation
+
+Configuration Files
+
+.env - Environment variables
+.gitignore - Git ignore configuration
+app.json - Konfigurasi Expo app
+eas.json - Expo Application Services config
+eslint.config.js - ESLint configuration
+package.json - Dependencies dan scripts
+tsconfig.json - TypeScript configuration
 ---
 
 ## ⚙️ Cara Menjalankan Proyek
