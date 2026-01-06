@@ -1,18 +1,18 @@
 // app/admin/index.tsx - TOUCHABLE FIXED
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Image,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  Pressable,
 } from "react-native";
 import colors from "../../constants/theme";
 import { supabase } from "../../lib/supabase";
@@ -73,34 +73,133 @@ export default function AdminDashboard() {
     setRefreshing(false);
   };
 
-  const handleDeleteProduct = async (productId: number) => {
-    console.log("🗑️ DELETE START", productId);
+  const handleDeleteProduct = async (productId, productName) => {
+    console.log("🗑️ handleDeleteProduct CALLED!");
+    console.log("Product ID:", productId);
+    console.log("Product ID Type:", typeof productId);
+    console.log("Product Name:", productName);
 
+    // Step 1: Verify product exists first
     try {
-      const { error } = await supabase
+      console.log("Step 1: Checking if product exists...");
+      const { data: checkData, error: checkError } = await supabase
         .from("products")
-        .delete()
-        .eq("id", productId);
+        .select("*")
+        .eq("id", productId)
+        .single();
 
-      if (error) {
-        console.error("❌ DELETE ERROR:", error);
-        Alert.alert("Error", error.message);
+      console.log("Check data:", checkData);
+      console.log("Check error:", checkError);
+
+      if (checkError) {
+        console.error("❌ Product not found:", checkError);
+        Alert.alert("Error", "Produk tidak ditemukan");
         return;
       }
-
-      console.log("✅ DELETE SUCCESS");
-
-      // Update UI langsung
-      setProducts((prev) => prev.filter((p) => p.id !== productId));
-
-      setStats((prev) => ({
-        ...prev,
-        total: Math.max(0, prev.total - 1),
-      }));
-    } catch (err: any) {
-      console.error("❌ DELETE FAILED:", err);
-      Alert.alert("Error", "Gagal menghapus produk");
+    } catch (e) {
+      console.error("❌ Check failed:", e);
+      Alert.alert("Error", "Gagal memeriksa produk");
+      return;
     }
+
+    // Step 2: Show confirmation dialog
+    Alert.alert(
+      "Hapus Produk",
+      `Yakin ingin menghapus "${productName}"?\n\nID: ${productId}`,
+      [
+        {
+          text: "Batal",
+          style: "cancel",
+          onPress: () => console.log("❌ Delete cancelled"),
+        },
+        {
+          text: "Hapus",
+          style: "destructive",
+          onPress: async () => {
+            console.log("💥 Delete confirmed! Starting deletion...");
+
+            try {
+              // Step 3: Execute delete
+              console.log("Step 3: Executing DELETE query...");
+              console.log("DELETE FROM products WHERE id =", productId);
+
+              const { data, error, status, statusText } = await supabase
+                .from("products")
+                .delete()
+                .eq("id", productId)
+                .select();
+
+              console.log("=== DELETE RESPONSE ===");
+              console.log("Status:", status);
+              console.log("Status Text:", statusText);
+              console.log("Data:", data);
+              console.log("Error:", error);
+              console.log("=====================");
+
+              if (error) {
+                console.error("❌ Supabase delete error:");
+                console.error("  Message:", error.message);
+                console.error("  Details:", error.details);
+                console.error("  Hint:", error.hint);
+                console.error("  Code:", error.code);
+                throw error;
+              }
+
+              if (!data || data.length === 0) {
+                console.log(
+                  "⚠️ Delete returned no data (might be already deleted)"
+                );
+                Alert.alert(
+                  "Perhatian",
+                  "Produk mungkin sudah dihapus sebelumnya"
+                );
+                await loadProducts();
+                return;
+              }
+
+              console.log("✅ Delete successful! Deleted item:", data[0]);
+
+              // Step 4: Update local state
+              console.log("Step 4: Updating local state...");
+              setProducts((prev) => {
+                const filtered = prev.filter((p) => p.id !== productId);
+                console.log(
+                  `Products count: ${prev.length} -> ${filtered.length}`
+                );
+                return filtered;
+              });
+
+              setStats((prev) => ({
+                ...prev,
+                total: Math.max(0, prev.total - 1),
+              }));
+
+              Alert.alert("✅ Berhasil", "Produk berhasil dihapus!");
+
+              // Step 5: Reload from server
+              console.log("Step 5: Reloading from server...");
+              setTimeout(async () => {
+                await loadProducts();
+                console.log("✅ Reload complete");
+              }, 500);
+            } catch (error) {
+              console.error("❌ DELETE OPERATION FAILED!");
+              console.error("Error object:", error);
+              console.error("Error message:", error.message);
+              console.error("Error stack:", error.stack);
+
+              Alert.alert(
+                "Error",
+                `Gagal menghapus produk\n\nDetail: ${error.message}\n\nCek console untuk info lengkap`
+              );
+
+              // Reload to restore correct state
+              await loadProducts();
+            }
+          },
+        },
+      ]
+    );
   };
 
   const formatPrice = (price) => {
@@ -199,12 +298,18 @@ export default function AdminDashboard() {
                 <Pressable
                   style={({ pressed }) => [
                     styles.actionButton,
-                    styles.deleteButton,
+                    styles.editButton,
                     pressed && styles.buttonPressed,
                   ]}
-                  onPress={() => handleDeleteProduct(product.id)}
+                  onPress={() => {
+                    console.log("✏️ Edit clicked for:", product.id);
+                    router.push({
+                      pathname: "/admin/editProduct",
+                      params: { id: product.id },
+                    });
+                  }}
                 >
-                  <Ionicons name="trash" size={20} color="#EF4444" />
+                  <Ionicons name="create" size={20} color="#3B82F6" />
                 </Pressable>
 
                 {/* Delete Button - Using Pressable with explicit hit area */}

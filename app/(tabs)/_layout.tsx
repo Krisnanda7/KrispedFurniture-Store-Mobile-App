@@ -70,6 +70,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <CartIcon color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          title: "Admin",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person-outline" size={22} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
