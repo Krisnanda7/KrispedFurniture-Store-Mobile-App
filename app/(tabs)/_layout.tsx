@@ -1,4 +1,3 @@
-// app/(tabs)/_layout.tsx
 import { Ionicons } from "@expo/vector-icons";
 import Airbridge from "airbridge-react-native-sdk";
 import { Tabs } from "expo-router";
